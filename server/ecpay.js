@@ -2,17 +2,16 @@
 // 演算法依綠界官方文件：排序 → 串接 HashKey/HashIV → .NET 風格 URL encode → 轉小寫 → SHA256 → 轉大寫
 const crypto = require('crypto');
 
-// .NET HttpUtility.UrlEncode 風格：encodeURIComponent 後，把這些還原成字面字元
+// 對齊綠界官方 PHP SDK 的 .NET URL encode：
+// 先 encodeURIComponent，再把 JS 與 .NET 行為不同處補齊：
+//   空白→'+'、單引號→%27、~→%7e（encodeURIComponent 不會編這兩個）。
+// !、*、(、)、-、_、. 在 encodeURIComponent 本來就保持字面，符合綠界規則。
+// 最終整串再轉小寫（由呼叫端處理）。
 function dotNetUrlEncode(str) {
   return encodeURIComponent(str)
     .replace(/%20/g, '+')
-    .replace(/%21/g, '!')
-    .replace(/%28/g, '(')
-    .replace(/%29/g, ')')
-    .replace(/%2a/gi, '*')
-    .replace(/%2d/gi, '-')
-    .replace(/%2e/gi, '.')
-    .replace(/%5f/gi, '_');
+    .replace(/'/g, '%27')
+    .replace(/~/g, '%7e');
 }
 
 // 產生 CheckMacValue（EncryptType=1 → SHA256）
