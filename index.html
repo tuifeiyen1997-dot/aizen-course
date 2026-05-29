@@ -321,17 +321,16 @@
 <section class="video-section" id="video">
   <div class="container">
     <div class="video-inner">
-      <div class="video-frame" data-state="paused">
-        <video class="thumb" playsinline preload="metadata" poster=""
-               src="uploads/%E8%9E%A2%E5%B9%95%E9%8C%84%E8%A3%BD%202026-05-28%20150235.mp4"></video>
-        <div class="chapters">
-          <span></span><span></span><span></span><span></span><span></span>
-        </div>
-        <div class="duration">02:48</div>
-        <button class="play" aria-label="Play introduction">
-          <svg class="ico-play" width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-          <svg class="ico-pause" width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
-        </button>
+      <div class="video-frame">
+        <!-- 把下面的 YOUR_VIDEO_ID 換成你的 YouTube 影片 ID（網址 watch?v= 後面那串）。
+             Vimeo 版本：src="https://player.vimeo.com/video/影片ID" -->
+        <iframe
+          src="https://www.youtube-nocookie.com/embed/YOUR_VIDEO_ID?rel=0"
+          title="AIZen 課程介紹"
+          loading="lazy"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allowfullscreen></iframe>
       </div>
       <div class="video-points">
         <div class="section-eyebrow">COURSE INTRO</div>

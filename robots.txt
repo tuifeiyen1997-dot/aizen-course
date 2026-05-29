@@ -1,0 +1,28 @@
+# 允許正常搜尋引擎索引這個銷售頁（你會想被 Google/Bing 找到）
+User-agent: *
+Allow: /
+
+# 擋掉常見的高耗流量 AI / SEO 爬蟲，降低無謂的頻寬消耗
+User-agent: GPTBot
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /

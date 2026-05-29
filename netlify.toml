@@ -1,0 +1,33 @@
+# Netlify 設定 — 靜態網站 + 快取 + 安全標頭
+# 目標：降低重複下載的頻寬、加上基本安全防護
+
+[build]
+  publish = "."
+
+# ── 安全標頭（全站套用）──────────────────────────────
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+
+# ── 靜態資產長效快取 ─────────────────────────────────
+# CSS / JS 改動後檔名不變，所以用 1 天快取 + 必須重新驗證，
+# 兼顧「更新會生效」與「減少重複下載」。
+[[headers]]
+  for = "/styles.css"
+  [headers.values]
+    Cache-Control = "public, max-age=86400, must-revalidate"
+
+[[headers]]
+  for = "/script.js"
+  [headers.values]
+    Cache-Control = "public, max-age=86400, must-revalidate"
+
+# 字型 / 圖片之類若日後加入，可長期快取
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"

@@ -1,18 +1,3 @@
-/* Video play/pause toggle */
-(function () {
-  const frame = document.querySelector('.video-frame');
-  if (!frame) return;
-  const video = frame.querySelector('video.thumb');
-  const btn = frame.querySelector('.play');
-  if (!video || !btn) return;
-  const toggle = () => { if (video.paused) { video.play(); } else { video.pause(); } };
-  btn.addEventListener('click', toggle);
-  video.addEventListener('click', toggle);
-  video.addEventListener('play',  () => frame.setAttribute('data-state', 'playing'));
-  video.addEventListener('pause', () => frame.setAttribute('data-state', 'paused'));
-  video.addEventListener('ended', () => frame.setAttribute('data-state', 'paused'));
-})();
-
 /* Countdown ticker — counts down 7 days 14 hours from page load */
 (function () {
   const target = new Date();
