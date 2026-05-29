@@ -1,45 +1,118 @@
 <script>
-/* Countdown ticker — counts down 7 days 14 hours from page load */
+/* ===== AIZen 前端互動 ===== */
+/* 後端 API 位址：在 Webflow 第③個 embed 之前，用一行設定：
+     <script>window.AIZEN_API_BASE = 'https://api.你的網域.com';</script>
+   未設定時，表單會退回原本的 alert 行為（方便純前端預覽）。 */
 (function () {
-  const target = new Date();
-  target.setDate(target.getDate() + 7);
-  target.setHours(target.getHours() + 14);
-  function tick() {
-    const now = new Date();
-    let s = Math.max(0, Math.floor((target - now) / 1000));
-    const d = Math.floor(s / 86400); s -= d * 86400;
-    const h = Math.floor(s / 3600);  s -= h * 3600;
-    const m = Math.floor(s / 60);    s -= m * 60;
-    const $ = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = String(v).padStart(2, '0'); };
-    $('cd-d', d); $('cd-h', h); $('cd-m', m); $('cd-s', s);
-  }
-  tick();
-  setInterval(tick, 1000);
-})();
+  var API_BASE = (window.AIZEN_API_BASE || '').replace(/\/$/, '');
+  var fmt = function (n) { return Number(n).toLocaleString('en-US'); };
 
-/* Enrollment form: price display + submit */
-(function () {
-  const form = document.getElementById('enroll-form');
+  /* ---- 倒數計時：自載入起 7 天 14 小時 ---- */
+  (function () {
+    var target = new Date();
+    target.setDate(target.getDate() + 7);
+    target.setHours(target.getHours() + 14);
+    function tick() {
+      var now = new Date();
+      var s = Math.max(0, Math.floor((target - now) / 1000));
+      var d = Math.floor(s / 86400); s -= d * 86400;
+      var h = Math.floor(s / 3600);  s -= h * 3600;
+      var m = Math.floor(s / 60);    s -= m * 60;
+      var set = function (id, v) { var el = document.getElementById(id); if (el) el.textContent = String(v).padStart(2, '0'); };
+      set('cd-d', d); set('cd-h', h); set('cd-m', m); set('cd-s', s);
+    }
+    tick();
+    setInterval(tick, 1000);
+  })();
+
+  /* ---- 報名表單 ---- */
+  var form = document.getElementById('enroll-form');
   if (!form) return;
-  const priceDisplay = document.getElementById('price-display');
-  const priceMap = { '1': '8,800', '3': '2,934 × 3', '6': '1,467 × 6' };
-  form.addEventListener('change', (e) => {
-    if (e.target.name === 'installment' && priceDisplay && priceMap[e.target.value]) {
-      priceDisplay.textContent = priceMap[e.target.value];
+  var priceDisplay = document.getElementById('price-display');
+
+  // 目前各方案的每期金額（會被 /api/price 覆寫）
+  var amounts = { earlybird: 8800, install3: 2934, install6: 1467 };
+  var currentPlan = '1';
+
+  function renderPlanPrice() {
+    if (!priceDisplay) return;
+    if (currentPlan === '3') priceDisplay.textContent = fmt(amounts.install3) + ' × 3';
+    else if (currentPlan === '6') priceDisplay.textContent = fmt(amounts.install6) + ' × 6';
+    else priceDisplay.textContent = fmt(amounts.earlybird);
+  }
+
+  /* 載入時抓最新價格 */
+  if (API_BASE) {
+    fetch(API_BASE + '/api/price')
+      .then(function (r) { return r.json(); })
+      .then(function (p) {
+        amounts.earlybird = p.earlybird;
+        if (p.installments) {
+          amounts.install3 = p.installments['3'];
+          amounts.install6 = p.installments['6'];
+        }
+        renderPlanPrice();
+      })
+      .catch(function () { /* 抓不到就用預設值 */ });
+  }
+
+  form.addEventListener('change', function (e) {
+    if (e.target.name === 'installment') {
+      currentPlan = e.target.value;
+      renderPlanPrice();
     }
   });
-  form.addEventListener('submit', (e) => {
+
+  form.addEventListener('submit', function (e) {
     e.preventDefault();
-    const data = new FormData(form);
-    const name  = (data.get('name')  || '').toString().trim();
-    const email = (data.get('email') || '').toString().trim();
-    const phone = (data.get('phone') || '').toString().trim();
-    const installment = data.get('installment');
-    const agreed = document.getElementById('enroll-agree').checked;
+    var data = new FormData(form);
+    var name  = (data.get('name')  || '').toString().trim();
+    var email = (data.get('email') || '').toString().trim();
+    var phone = (data.get('phone') || '').toString().trim();
+    var plan  = data.get('installment') || '1';
+    var agreed = document.getElementById('enroll-agree').checked;
+
     if (!name || !email || !phone) { alert('請完整填寫姓名、Email 與聯絡電話'); return; }
     if (!agreed) { alert('請先同意服務條款與隱私權政策'); return; }
-    const planText = { '1': '一次付清 NT$ 8,800', '3': '分 3 期（每期 NT$ 2,934）', '6': '分 6 期（每期 NT$ 1,467）' }[installment] || '一次付清';
-    alert(`感謝您的報名！\n\n姓名：${name}\nEmail：${email}\n電話：${phone}\n付款方式：${planText}\n\n我們將盡快與您聯繫確認付款流程。`);
+
+    // 未設定後端 → 退回原本提示（純前端預覽用）
+    if (!API_BASE) {
+      var planText = { '1': '一次付清', '3': '分 3 期', '6': '分 6 期' }[plan] || '一次付清';
+      alert('感謝您的報名！\n\n姓名：' + name + '\nEmail：' + email + '\n電話：' + phone +
+            '\n付款方式：' + planText + '\n\n（尚未設定後端 API，未實際送出付款）');
+      return;
+    }
+
+    var submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn) submitBtn.disabled = true;
+
+    fetch(API_BASE + '/api/enroll', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: name, email: email, phone: phone, plan: plan }),
+    })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); })
+      .then(function (res) {
+        if (!res.ok || !res.body.action) { throw new Error(res.body.error || '建立訂單失敗'); }
+        // 用回傳參數建立隱藏表單，自動送往綠界付款頁
+        var f = document.createElement('form');
+        f.method = 'POST';
+        f.action = res.body.action;
+        f.style.display = 'none';
+        Object.keys(res.body.params).forEach(function (k) {
+          var input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = k;
+          input.value = res.body.params[k];
+          f.appendChild(input);
+        });
+        document.body.appendChild(f);
+        f.submit();
+      })
+      .catch(function (err) {
+        alert('發生錯誤：' + err.message);
+        if (submitBtn) submitBtn.disabled = false;
+      });
   });
 })();
 </script>

@@ -1,0 +1,17 @@
+{
+  "name": "aizen-course-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AIZen 課程報名後端：報名寫入資料庫 + 綠界 ECPay 金流",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "initdb": "node -e \"require('fs');const{Pool}=require('pg');require('dotenv').config();const p=new Pool({connectionString:process.env.DATABASE_URL});p.query(require('fs').readFileSync('./schema.sql','utf8')).then(()=>{console.log('schema ok');process.exit(0)}).catch(e=>{console.error(e);process.exit(1)})\""
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "pg": "^8.11.5"
+  }
+}
