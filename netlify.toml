@@ -1,8 +1,11 @@
 # Netlify 設定 — 靜態網站 + 快取 + 安全標頭
 # 目標：降低重複下載的頻寬、加上基本安全防護
 
+# 只把正式網站檔案複製到 dist/ 發佈，避免 chats/、project/、README、
+# webflow-embed.html 等設計原始檔被公開瀏覽。
 [build]
-  publish = "."
+  command = "mkdir -p dist && cp index.html styles.css script.js robots.txt dist/"
+  publish = "dist"
 
 # ── 安全標頭（全站套用）──────────────────────────────
 [[headers]]
